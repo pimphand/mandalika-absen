@@ -2,7 +2,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 
-const BASE_URL = 'https://absensi.dmpt.my.id/api'
+const BASE_URL = 'https://absen-cikurai.test/api'
 
 const handleUnauthorized = () => {
   const authStore = useAuthStore()

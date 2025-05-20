@@ -16,6 +16,10 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { PieChart, BookOpen } from "lucide-vue-next";
+import { useRouter, useRoute } from "vue-router";
+
+const router = useRouter();
+const route = useRoute();
 
 const props = defineProps<{
   items: {
@@ -60,30 +64,44 @@ const items = [...defaultItems, ...props.items];
         class="group/collapsible"
       >
         <SidebarMenuItem>
-          <CollapsibleTrigger as-child>
-            <SidebarMenuButton :tooltip="item.title">
+          <!-- Use different approach based on whether item has sub-items -->
+          <template v-if="item.items?.length">
+            <!-- Items with sub-menu -->
+            <CollapsibleTrigger as-child>
+              <SidebarMenuButton :tooltip="item.title">
+                <component :is="item.icon" v-if="item.icon" />
+                <span>{{ item.title }}</span>
+                <ChevronRight
+                  class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+                />
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenuSub>
+                <SidebarMenuSubItem
+                  v-for="subItem in item.items"
+                  :key="subItem.title"
+                >
+                  <div @click="router.push(subItem.url)" class="cursor-pointer">
+                    <span>{{ subItem.title }}</span>
+                  </div>
+                </SidebarMenuSubItem>
+              </SidebarMenuSub>
+            </CollapsibleContent>
+          </template>
+
+          <!-- Items without sub-menu -->
+          <template v-else>
+            <SidebarMenuButton
+              :tooltip="item.title"
+              @click="router.push(item.url)"
+              :active="route.path === item.url"
+              class="cursor-pointer"
+            >
               <component :is="item.icon" v-if="item.icon" />
               <span>{{ item.title }}</span>
-              <ChevronRight
-                v-if="item.items?.length"
-                class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
-              />
             </SidebarMenuButton>
-          </CollapsibleTrigger>
-          <CollapsibleContent v-if="item.items?.length">
-            <SidebarMenuSub>
-              <SidebarMenuSubItem
-                v-for="subItem in item.items"
-                :key="subItem.title"
-              >
-                <SidebarMenuSubButton as-child>
-                  <a :href="subItem.url">
-                    <span>{{ subItem.title }}</span>
-                  </a>
-                </SidebarMenuSubButton>
-              </SidebarMenuSubItem>
-            </SidebarMenuSub>
-          </CollapsibleContent>
+          </template>
         </SidebarMenuItem>
       </Collapsible>
     </SidebarMenu>

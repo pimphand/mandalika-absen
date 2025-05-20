@@ -3,19 +3,19 @@
     <div class="container mx-auto p-4">
       <div class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold">Daftar Absensi</h1>
-        <div class="flex gap-4">
-          <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg">
-            <span class="font-semibold">Hadir:</span> {{ absenCount.present }}
-          </div>
-          <div class="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg">
-            <span class="font-semibold">Terlambat:</span> {{ absenCount.late }}
-          </div>
-        </div>
       </div>
 
       <DataTable :columns="columns" :items="absenList">
         <template #attendance_date="{ item }">
           {{ formatDate(item.attendance_date) }}
+        </template>
+        <template #user="{ item }">
+          <div class="flex flex-col">
+            <span class="font-medium">{{ item.user.name }}</span>
+            <span class="text-sm text-gray-500">{{
+              item.user.roles[0].name
+            }}</span>
+          </div>
         </template>
         <template #status_check_in="{ item }">
           <span :class="getStatusClass(item.status_check_in)">
@@ -65,10 +65,33 @@ interface Absen {
   longitude_check_in: string | null;
   latitude_check_out: string | null;
   longitude_check_out: string | null;
+  distance_check_in: number | null;
+  distance_check_out: number | null;
   photo_check_in: string | null;
   photo_check_out: string | null;
   status_check_in: string;
   status_check_out: string | null;
+  user: {
+    id: number;
+    username: string;
+    name: string;
+    email: string;
+    is_active: number;
+    phone: string | null;
+    address: string | null;
+    city: string | null;
+    province: string | null;
+    country: string | null;
+    number_id: string | null;
+    photo: string | null;
+    email_verified_at: string | null;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+    target_sales: number;
+    achieved_sales: number;
+    omzet_items: number;
+  };
 }
 
 interface Pagination {
@@ -95,14 +118,11 @@ interface AbsenResponse {
   data: {
     data: Absen[];
   } & Pagination;
-  absen_count: {
-    late: number;
-    present: number;
-  };
 }
 
 const columns = [
   { key: "attendance_date", label: "Tanggal" },
+  { key: "user", label: "Nama" },
   { key: "check_in", label: "Jam Masuk" },
   { key: "status_check_in", label: "Status Masuk" },
   { key: "check_out", label: "Jam Keluar" },
@@ -125,12 +145,11 @@ const pagination = ref<Pagination>({
   to: 0,
   total: 0,
 });
-const absenCount = ref({ late: 0, present: 0 });
 const currentPage = ref(1);
 
 const fetchAbsenList = async (page = 1) => {
   try {
-    const response = await http.get(`/absen?page=${page}`);
+    const response = await http.get(`/admin/absen?page=${page}`);
     const data = response as AbsenResponse;
     absenList.value = data.data.data;
     pagination.value = {
@@ -147,7 +166,6 @@ const fetchAbsenList = async (page = 1) => {
       to: data.data.to,
       total: data.data.total,
     };
-    absenCount.value = data.absen_count;
     currentPage.value = page;
   } catch (error) {
     console.error("Error fetching absen list:", error);
@@ -165,7 +183,7 @@ const formatDate = (date: string) => {
 
 const getStatusClass = (status: string) => {
   const classes = {
-    Hadir: "bg-green-100 text-green-800",
+    "Sudah Absen": "bg-green-100 text-green-800",
     Terlambat: "bg-yellow-100 text-yellow-800",
     Izin: "bg-blue-100 text-blue-800",
     Sakit: "bg-purple-100 text-purple-800",

@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-  baseURL: import.meta.env.VITE_API_URL || 'https://absensi.dmpt.my.id',
+  baseURL: import.meta.env.VITE_API_URL || 'https://absen-cikurai.test',
   endpoints: {
     login: '/api/login',
   },
